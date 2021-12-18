@@ -1,5 +1,8 @@
 import json
 
+from kmeans import Kmeans
+from kmeansPlus import KmeansPlus
+
 
 def kmeans_cluster_and_evaluate(data_file):
     # todo: implement this function
