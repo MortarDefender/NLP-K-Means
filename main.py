@@ -50,7 +50,23 @@ def kmeans_cluster_and_evaluate(data_file):
     # todo: fill in the dictionary below with evaluation scores averaged over X runs
     evaluation_results = {'mean_RI_score':  0.0,
                           'mean_ARI_score': 0.0}
-
+    
+    roundsAmount = 100
+    data = getFeatureVectors(data_file)
+    labels, labelsAmount = getLabels(data_file)
+    
+    classfier = Kmeans(labelsAmount)
+    avregeRi, avregeAri = 0, 0
+    
+    for i in range(roundsAmount):
+        classfier.fit(data)
+        ri, ari = classfier.accuracy(labels)
+        avregeRi += ri
+        avregeAri += ari
+    
+    evaluation_results['mean_RI_score'] = avregeRi / roundsAmount
+    evaluation_results['mean_ARI_score'] = avregeAri / roundsAmount
+    
     return evaluation_results
 
 

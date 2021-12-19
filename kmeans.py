@@ -63,8 +63,8 @@ class Kmeans:
                 color = 'gray', label = 'data points')
         plt.scatter(self.__centers[:-1, 0], self.__centers[:-1, 1],
                     color = 'black', label = 'selected centroids')
-        plt.title('Select % d th centroid'%(self.__centers.shape[0]))
-         
+        plt.title('Select % d th centroid' % (self.__centers.shape[0]))
+        
         plt.legend()
         plt.xlim(-5, 12)
         plt.ylim(-10, 15)
