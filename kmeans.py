@@ -1,7 +1,10 @@
+import csv
 import json
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import distance
+from sklearn.metrics import rand_score
+from sklearn.metrics.cluster import adjusted_rand_score
 
 
 class Kmeans:
@@ -10,9 +13,22 @@ class Kmeans:
         self.__maxNumberOfIterations = 100
         self.__pastDataSets = []
         self.__centers = []
-
-    def __placeClusterCentroids(self, data):
-        self.__centers = np.random.choice(data, size = self.__numberOfClusters)
+        self.__data = None
+    
+    @staticmethod
+    def getLabels(fileName):
+        allLabels = []
+        
+        with open(fileName, "r") as f:
+            tsv = csv.reader(f, delimiter="\t")
+            
+            for line in tsv:
+                allLabels.append(line[0])
+        
+        return allLabels, len(set(allLabels))
+    
+    def __placeClusterCentroids(self):
+        self.__centers = np.random.choice(self.__data, size = self.__numberOfClusters)
 
     def __findNearstCentrois(self, dataPoint):
         minCenterIndex = 0
@@ -26,7 +42,8 @@ class Kmeans:
         
         return minCenterIndex
     
-    def __checkDistance(self, pointA, pointB):
+    @staticmethod
+    def __checkDistance(pointA, pointB):
         # euclidean distance
         return distance.euclidean(pointA, pointB)
 
@@ -41,8 +58,8 @@ class Kmeans:
                         
         return points >= 2
 
-    def plot(self, data):
-        plt.scatter(data[:, 0], data[:, 1], marker = '.',
+    def plot(self):
+        plt.scatter(self.__data[:, 0], self.__data[:, 1], marker = '.',
                 color = 'gray', label = 'data points')
         plt.scatter(self.__centers[:-1, 0], self.__centers[:-1, 1],
                     color = 'black', label = 'selected centroids')
@@ -53,11 +70,15 @@ class Kmeans:
         plt.ylim(-10, 15)
         plt.show()
     
+    def accuracy(self):
+        pass
+    
     def fit(self, data):
         index = 0
-        self.__placeClusterCentroids(data)
+        self.__data = data
+        self.__placeClusterCentroids()
         
-        while index < self.__maxNumberOfIterations or self.__checkConvergence():
+        while index < self.__maxNumberOfIterations and not self.__checkConvergence():
             
             dataPoints = [[]] * self.__numberOfClusters
             

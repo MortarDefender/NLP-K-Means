@@ -1,7 +1,37 @@
+import csv
 import json
 
 from kmeans import Kmeans
 from kmeansPlus import KmeansPlus
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer as Downscale
+
+
+def getLabels(fileName):
+    allLabels = []
+    
+    with open(fileName, "r") as f:
+        tsv = csv.reader(f, delimiter="\t")
+        
+        for line in tsv:
+            allLabels.append(line[0])
+    
+    return allLabels, len(set(allLabels))
+
+
+def getFeatureVectors(fileName):
+    data = []
+    
+    with open(fileName, "r") as f:
+        tsv = csv.reader(f, delimiter="\t")
+        
+        for line in tsv:
+            data.append(line[1])
+    
+    vectorizer = CountVectorizer(analyzer='word', ngram_range=(1, 2))
+    arrayOfAppearances = vectorizer.fit_transform(data)
+    return Downscale().fit_transform(arrayOfAppearances)
 
 
 def kmeans_cluster_and_evaluate(data_file):
