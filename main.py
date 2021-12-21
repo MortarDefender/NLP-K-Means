@@ -1,7 +1,37 @@
+import csv
 import json
 
 from kmeans import Kmeans
 from kmeansPlus import KmeansPlus
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer as Downscale
+
+
+def getLabels(fileName):
+    allLabels = []
+
+    with open(fileName, "r") as f:
+        tsv = csv.reader(f, delimiter="\t")
+
+        for line in tsv:
+            allLabels.append(line[0])
+
+    return allLabels, len(set(allLabels))
+
+
+def getFeatureVectors(fileName):
+    data = []
+
+    with open(fileName, "r") as f:
+        tsv = csv.reader(f, delimiter="\t")
+
+        for line in tsv:
+            data.append(line[1])
+
+    vectorizer = CountVectorizer(analyzer='word', ngram_range=(1, 2))
+    arrayOfAppearances = vectorizer.fit_transform(data)
+    return Downscale().fit_transform(arrayOfAppearances)
 
 
 def kmeans_cluster_and_evaluate(data_file):
@@ -18,8 +48,24 @@ def kmeans_cluster_and_evaluate(data_file):
     #  https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html
 
     # todo: fill in the dictionary below with evaluation scores averaged over X runs
-    evaluation_results = {'mean_RI_score':  0.0,
+    evaluation_results = {'mean_RI_score': 0.0,
                           'mean_ARI_score': 0.0}
+
+    roundsAmount = 100
+    data = getFeatureVectors(data_file)
+    labels, labelsAmount = getLabels(data_file)
+
+    classfier = Kmeans(labelsAmount)
+    avregeRi, avregeAri = 0, 0
+
+    for i in range(roundsAmount):
+        classfier.fit(data)
+        ri, ari = classfier.accuracy(labels)
+        avregeRi += ri
+        avregeAri += ari
+
+    evaluation_results['mean_RI_score'] = avregeRi / roundsAmount
+    evaluation_results['mean_ARI_score'] = avregeAri / roundsAmount
 
     return evaluation_results
 
