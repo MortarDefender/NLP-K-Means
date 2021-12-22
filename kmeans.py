@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import distance
 from sklearn.metrics import rand_score
+from sklearn.metrics import pairwise_distances
 from sklearn.metrics.cluster import adjusted_rand_score
 
 
@@ -14,6 +15,7 @@ class Kmeans:
         self.__pastDataSets = []
         self.__centers = []
         self.__data = None
+        self.__clusterLabels = None
     
     @staticmethod
     def getLabels(fileName):
@@ -28,19 +30,27 @@ class Kmeans:
         return allLabels, len(set(allLabels))
     
     def __placeClusterCentroids(self):
-        self.__centers = np.random.choice(self.__data, size = self.__numberOfClusters)
+        randomCentroids = np.random.permutation(self.__data.shape[0])[:self.__numberOfClusters]
+        self.__centers = self.__data[randomCentroids]
 
     def __findNearstCentrois(self, dataPoint):
-        minCenterIndex = 0
-        minDistance = self.__checkDistance(dataPoint, self.__centers[0]) 
+        # minCenterIndex = 0
+        # minDistance = self.__checkDistance(dataPoint, self.__centers[0]) 
         
-        for i, center in enumerate(self.__centers):
-            currentDistance = self.__checkDistance(dataPoint, center) 
-            if minDistance < currentDistance:
-                minDistance = currentDistance
-                minCenterIndex = i
+        # for i, center in enumerate(self.__centers):
+        #     currentDistance = self.__checkDistance(dataPoint, center) 
+        #     if minDistance < currentDistance:
+        #         minDistance = currentDistance
+        #         minCenterIndex = i
         
-        return minCenterIndex
+        # return minCenterIndex
+        
+        if dataPoint.ndim == 1:
+            dataPoint = dataPoint.reshape(-1, 1)
+        
+        centroidDistances =  pairwise_distances(dataPoint, self.__centers, metric = 'euclidean')
+        self.__clusterLabels = np.argmin(centroidDistances, axis = 1)
+        return self.__clusterLabels
     
     @staticmethod
     def __checkDistance(pointA, pointB):
@@ -70,8 +80,11 @@ class Kmeans:
         plt.ylim(-10, 15)
         plt.show()
     
-    def accuracy(self):
-        pass
+    def accuracy(self, trueLabels):
+        return rand_score(trueLabels, self.__clusterLabels), adjusted_rand_score(trueLabels, self.__clusterLabels), 
+    
+    def predict(self, data):
+        return self.__findNearstCentrois(data)
     
     def fit(self, data):
         index = 0
@@ -79,19 +92,15 @@ class Kmeans:
         self.__placeClusterCentroids()
         
         while index < self.__maxNumberOfIterations and not self.__checkConvergence():
+            self.__clusterLabels = self.__findNearstCentrois(self.__data)
             
-            dataPoints = [[]] * self.__numberOfClusters
+            for i in range(self.__numberOfClusters):
+                self.__center[i] = self.__data[self.__clusterLabels == i].mean(axis = 0)
             
-            for point in data:
-                center = self.__findNearstCentrois(point)
-                dataPoints[center].append(point)
-            
-            for i, cluster in enumerate(self.__dataPoints):
-                self.__center[i] = np.mean(cluster)
             
             if len(self.__pastDataSets) > 2:
                 del self.__pastDataSets[0]
 
-            self.__pastDataSets.append(dataPoints)
+            self.__pastDataSets.append(self.__clusterLabels)
             
             index += 1

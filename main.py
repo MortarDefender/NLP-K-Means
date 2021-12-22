@@ -1,37 +1,35 @@
-import csv
 import json
 
 from kmeans import Kmeans
 from kmeansPlus import KmeansPlus
 
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer as Downscale
+import pandas as pd
+from sklearn.preprocessing import normalize
+# from sklearn.feature_extraction.text import CountVectorizer
+# from sklearn.feature_extraction.text import TfidfTransformer as Downscale
+from sklearn.feature_extraction.text import TfidfVectorizer as Downscale
 
 
 def getLabels(fileName):
-    allLabels = []
-    
-    with open(fileName, "r") as f:
-        tsv = csv.reader(f, delimiter="\t")
-        
-        for line in tsv:
-            allLabels.append(line[0])
+    dataFile = pd.read_csv(fileName, delimiter="\t")
+    dataFile = dataFile.set_axis(["labels", "data"], axis = 1, inplace = False)
+    allLabels = dataFile["labels"]
     
     return allLabels, len(set(allLabels))
 
 
 def getFeatureVectors(fileName):
-    data = []
+    dataFile = pd.read_csv(fileName, delimiter="\t")
+    dataFile = dataFile.set_axis(["labels", "data"], axis = 1, inplace = False)
+    data = dataFile["data"]
+    vectorizer = Downscale(stop_words = 'english',#tokenizer = tokenize_and_stem,
+                             max_features = 20000)
+    tf_idf = vectorizer.fit_transform(data)
+    tf_idf_norm = normalize(tf_idf)
+    tf_idf_array = tf_idf_norm.toarray()
     
-    with open(fileName, "r") as f:
-        tsv = csv.reader(f, delimiter="\t")
-        
-        for line in tsv:
-            data.append(line[1])
-    
-    vectorizer = CountVectorizer(analyzer='word', ngram_range=(1, 2))
-    arrayOfAppearances = vectorizer.fit_transform(data)
-    return Downscale().fit_transform(arrayOfAppearances)
+    # pd.DataFrame(tf_idf_array, columns=tf_idf_vectorizor.get_feature_names()).head()
+    return tf_idf_array
 
 
 def kmeans_cluster_and_evaluate(data_file):
@@ -51,7 +49,7 @@ def kmeans_cluster_and_evaluate(data_file):
     evaluation_results = {'mean_RI_score':  0.0,
                           'mean_ARI_score': 0.0}
     
-    roundsAmount = 100
+    roundsAmount = 1
     data = getFeatureVectors(data_file)
     labels, labelsAmount = getLabels(data_file)
     
