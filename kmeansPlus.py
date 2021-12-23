@@ -11,6 +11,7 @@ class KmeansPlus:
         self.__centroids = [0 for i in range(self.__K)]
         self.__distances = [[1,0] for i in enumerate(self.__vectors)]
         self.__weightedDistances = [1 for i in enumerate(self.__vectors)]
+        self.__vecInCentroid = [[] for i in range(self.__K)]
 
     def __placeClusterCentroids(self):
         return (random.choices(self.__vectors, weights=(self.__weightedDistances), k=1))[0]
@@ -19,7 +20,16 @@ class KmeansPlus:
         return distance.euclidean(x, y)
     
     def plot(self):
-        pass
+        plt.scatter(self.__vectors[:, 0], self.__vectors[:, 1], marker='.',
+                    color='gray', label='data points')
+        plt.scatter(self.__centroids[:-1, 0], self.__centroids[:-1, 1],
+                    color='black', label='selected centroids')
+        plt.title('Select % d th centroid' % (self.__centroids.shape[0]))
+
+        plt.legend()
+        plt.xlim(-5, 12)
+        plt.ylim(-10, 15)
+        plt.show()
     
     def fit(self):
         self.__centroids[0] = self.__placeClusterCentroids()
@@ -35,3 +45,6 @@ class KmeansPlus:
                     self.__distances[j][1] = i
                     self.__distances[j][0] = D
                     self.__weightedDistances[j] = pow(D,2)
+
+        for vec in self.__distances:
+            self.__vecInCentroid[vec[1]].append(vec[0])
