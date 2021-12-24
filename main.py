@@ -51,7 +51,7 @@ def kmeans_cluster_and_evaluate(data_file):
     evaluation_results = {'mean_RI_score': 0.0,
                           'mean_ARI_score': 0.0}
 
-    roundsAmount = 200
+    roundsAmount = 500
     data = getFeatureVectors(data_file)
     labels, labelsAmount = getLabels(data_file)
 

@@ -22,11 +22,11 @@ class KmeansPlus:
     def __placeClusterCentroids(self):
         return random.choices(self.__vectors, weights=(self.__weightedDistances), k=1)
 
-    def __computeDistance(self, dataPoint):
+    def __computeDistance(self, dataPoint, cent):
         distances = pairwise_distances(dataPoint, self.__centroids[-1], metric='euclidean')
         for i, dis in enumerate(distances):
             if self.__distances[i][0] > dis:
-                self.__distances[i] = [dis, len(self.__centroids) - 1]
+                self.__distances[i] = [dis, cent]
                 self.__weightedDistances[i] = dis ** 2
 
     def accuracy(self, trueLabels):
@@ -46,4 +46,4 @@ class KmeansPlus:
         self.__reFit()
         for i in range(self.__K):
             self.__centroids.append(self.__placeClusterCentroids())
-            self.__computeDistance(self.__vectors)
+            self.__computeDistance(self.__vectors, i)
