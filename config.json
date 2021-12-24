@@ -1,3 +1,4 @@
 {
-  "data":  "./data/atis_data.tsv"
+  "data":  "./data/atis_data.tsv",
+  "small-data": "./data/giant_food_data.3.tsv"
 }

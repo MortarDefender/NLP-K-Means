@@ -1,8 +1,7 @@
-import csv
-import json
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import distance
+from sklearn.decomposition import PCA
 from sklearn.metrics import rand_score
 from sklearn.metrics import pairwise_distances
 from sklearn.metrics.cluster import adjusted_rand_score
@@ -17,34 +16,11 @@ class Kmeans:
         self.__data = None
         self.__clusterLabels = None
     
-    @staticmethod
-    def getLabels(fileName):
-        allLabels = []
-        
-        with open(fileName, "r") as f:
-            tsv = csv.reader(f, delimiter="\t")
-            
-            for line in tsv:
-                allLabels.append(line[0])
-        
-        return allLabels, len(set(allLabels))
-    
     def __placeClusterCentroids(self):
         randomCentroids = np.random.permutation(self.__data.shape[0])[:self.__numberOfClusters]
         self.__centers = self.__data[randomCentroids]
 
     def __findNearstCentrois(self, dataPoint):
-        # minCenterIndex = 0
-        # minDistance = self.__checkDistance(dataPoint, self.__centers[0]) 
-        
-        # for i, center in enumerate(self.__centers):
-        #     currentDistance = self.__checkDistance(dataPoint, center) 
-        #     if minDistance < currentDistance:
-        #         minDistance = currentDistance
-        #         minCenterIndex = i
-        
-        # return minCenterIndex
-        
         if dataPoint.ndim == 1:
             dataPoint = dataPoint.reshape(-1, 1)
         
@@ -69,33 +45,35 @@ class Kmeans:
         return points >= 2
 
     def plot(self):
-        plt.scatter(self.__data[:, 0], self.__data[:, 1], marker = '.',
-                color = 'gray', label = 'data points')
-        plt.scatter(self.__centers[:-1, 0], self.__centers[:-1, 1],
-                    color = 'black', label = 'selected centroids')
-        plt.title('Select % d th centroid' % (self.__centers.shape[0]))
-        
-        plt.legend()
-        plt.xlim(-5, 12)
-        plt.ylim(-10, 15)
+        sklearn_pca = PCA(n_components = 2)
+        t_labels = sklearn_pca.fit_transform(self.__data)
+        plt.scatter(t_labels[:, 0], t_labels[:, 1], c=self.__clusterLabels, s=50, cmap='viridis')
+        plt.scatter(self.__centers[:, 0], self.__centers[:, 1],c='black', s=300, alpha=0.6)
         plt.show()
+        
+        # print(self.__centers)
     
     def accuracy(self, trueLabels):
-        return rand_score(trueLabels, self.__clusterLabels), adjusted_rand_score(trueLabels, self.__clusterLabels), 
+        # print(trueLabels)
+        # print("!!!!!!!!")
+        # print(self.__clusterLabels)
+        return rand_score(trueLabels, self.__clusterLabels), adjusted_rand_score(trueLabels, self.__clusterLabels)
     
     def predict(self, data):
         return self.__findNearstCentrois(data)
     
     def fit(self, data):
-        index = 0
+        # index = 0
         self.__data = data
         self.__placeClusterCentroids()
         
-        while index < self.__maxNumberOfIterations and not self.__checkConvergence():
+        # while index < self.__maxNumberOfIterations and not self.__checkConvergence():
+        for index in range(self.__maxNumberOfIterations):
             self.__clusterLabels = self.__findNearstCentrois(self.__data)
+            # print(self.__clusterLabels)
             
             for i in range(self.__numberOfClusters):
-                self.__center[i] = self.__data[self.__clusterLabels == i].mean(axis = 0)
+                self.__centers[i] = self.__data[self.__clusterLabels == i].mean(axis = 0)
             
             
             if len(self.__pastDataSets) > 2:
@@ -103,4 +81,4 @@ class Kmeans:
 
             self.__pastDataSets.append(self.__clusterLabels)
             
-            index += 1
+            # index += 1
