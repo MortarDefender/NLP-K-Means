@@ -1,50 +1,49 @@
-import json
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import distance
+from sklearn.decomposition import PCA
+from sklearn.metrics import pairwise_distances, rand_score, adjusted_rand_score
+
 
 class KmeansPlus:
-    def __init__(self, numOfClusters, vectors):
+    def __init__(self, numOfClusters, vec):
         self.__K = numOfClusters
-        self.__vectors = vectors
-        self.__centroids = [0 for i in range(self.__K)]
-        self.__distances = [[1,0] for i in enumerate(self.__vectors)]
+        self.__vectors = vec
+        self.__centroids = []
+        self.__distances = [[np.inf,0] for i in range(len(vec))]
         self.__weightedDistances = [1 for i in enumerate(self.__vectors)]
-        self.__vecInCentroid = [[] for i in range(self.__K)]
+
+    def __reFit(self):
+        self.__centroids = []
+        self.__distances = [[np.inf, 0] for i in range(len(self.__vectors))]
+        self.__weightedDistances = [1 for i in enumerate(self.__vectors)]
 
     def __placeClusterCentroids(self):
-        return (random.choices(self.__vectors, weights=(self.__weightedDistances), k=1))[0]
-    
-    def __computeDistance(self, x, y):
-        return distance.euclidean(x, y)
-    
-    def plot(self):
-        plt.scatter(self.__vectors[:, 0], self.__vectors[:, 1], marker='.',
-                    color='gray', label='data points')
-        plt.scatter(self.__centroids[:-1, 0], self.__centroids[:-1, 1],
-                    color='black', label='selected centroids')
-        plt.title('Select % d th centroid' % (self.__centroids.shape[0]))
+        return random.choices(self.__vectors, weights=(self.__weightedDistances), k=1)
 
-        plt.legend()
-        plt.xlim(-5, 12)
-        plt.ylim(-10, 15)
+    def __computeDistance(self, dataPoint):
+        distances = pairwise_distances(dataPoint, self.__centroids[-1], metric='euclidean')
+        for i, dis in enumerate(distances):
+            if self.__distances[i][0] > dis:
+                self.__distances[i] = [dis, len(self.__centroids) - 1]
+                self.__weightedDistances[i] = dis ** 2
+
+    def accuracy(self, trueLabels):
+        labels = [item[1] for item in self.__distances]
+        return rand_score(trueLabels, labels), adjusted_rand_score(trueLabels, labels)
+
+    def plot(self):
+        cent = np.array(self.__centroids)
+        labels = [item[1] for item in self.__distances]
+        sklearn_pca = PCA(n_components = 2)
+        t_labels = sklearn_pca.fit_transform(self.__vectors)
+        plt.scatter(t_labels[:, 0], t_labels[:, 1], c=labels, s=50, cmap='viridis')
+        plt.scatter(cent[0][:, 0], cent[0][:, 1],c='black', s=300, alpha=0.6)
         plt.show()
     
     def fit(self):
-        self.__centroids[0] = self.__placeClusterCentroids()
-        for i, point in enumerate(self.__vectors):
-            self.__distances[i][0] = self.__computeDistance(point[0], self.__centroids[0])
-            self.__weightedDistances[i] = pow(self.__distances[i][0],2)
-
-        for i in range(1,self.__K):
-            self.__centroids[i] = self.__placeClusterCentroids()
-            for j, point in enumerate(self.__vectors):
-                D = self.__computeDistance(point[0],self.__centroids[i])
-                if D < self.__distances[j][0]:
-                    self.__distances[j][1] = i
-                    self.__distances[j][0] = D
-                    self.__weightedDistances[j] = pow(D,2)
-
-        for vec in self.__distances:
-            self.__vecInCentroid[vec[1]].append(vec[0])
+        self.__reFit()
+        for i in range(self.__K):
+            self.__centroids.append(self.__placeClusterCentroids())
+            self.__computeDistance(self.__vectors)
