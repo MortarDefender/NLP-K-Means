@@ -70,8 +70,8 @@ def kmeans_cluster_and_evaluate(data_file):
 
     classfier.plot()
         
-    evaluation_results['mean_RI_score'] = avregeRi / roundsAmount
-    evaluation_results['mean_ARI_score'] = avregeAri / roundsAmount
+    evaluation_results['mean_RI_score'] = avregeRi / roundsAmount * 100
+    evaluation_results['mean_ARI_score'] = avregeAri / roundsAmount * 100
 
     return evaluation_results
 
