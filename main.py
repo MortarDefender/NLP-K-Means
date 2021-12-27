@@ -1,7 +1,6 @@
 import json
 
 from kmeans import Kmeans
-# from sklearn.cluster import KMeans
 from kmeansPlus import KmeansPlus
 
 import pandas as pd
@@ -54,17 +53,17 @@ def kmeans_cluster_and_evaluate(data_file):
     roundsAmount = 500
     data = getFeatureVectors(data_file)
     labels, labelsAmount = getLabels(data_file)
-
+    
+    # classfier = Kmeans(labelsAmount)
     classfier = KmeansPlus(labelsAmount,data)
-    # classfier = KMeans(n_clusters=labelsAmount)
+    
     avregeRi, avregeAri = 0, 0
 
     for i in range(roundsAmount):
+        # classfier.fit(data)
         classfier.fit()
-        #predict = classfier.predict(data)
         ri, ari = classfier.accuracy(labels)
-        #ri, ari = rand_score(labels, predict), adjusted_rand_score(labels, predict)
-        #print(ri, ari)
+        # print(ri, ari)
         avregeRi += ri
         avregeAri += ari
 
