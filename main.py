@@ -1,7 +1,6 @@
 import json
 
 from kmeans import Kmeans
-# from sklearn.cluster import KMeans
 from kmeansPlus import KmeansPlus
 
 import pandas as pd
@@ -48,28 +47,28 @@ def kmeans_cluster_and_evaluate(data_file):
     #  https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_rand_score.html
 
     # todo: fill in the dictionary below with evaluation scores averaged over X runs
-    evaluation_results = {'mean_RI_score':  0.0,
+    evaluation_results = {'mean_RI_score': 0.0,
                           'mean_ARI_score': 0.0}
 
-    roundsAmount = 50
+    roundsAmount = 500
     data = getFeatureVectors(data_file)
     labels, labelsAmount = getLabels(data_file)
-
-    classfier = Kmeans(labelsAmount)
-    # classfier = KMeans(n_clusters=labelsAmount)
+    
+    # classfier = Kmeans(labelsAmount)
+    classfier = KmeansPlus(labelsAmount,data)
+    
     avregeRi, avregeAri = 0, 0
 
     for i in range(roundsAmount):
-        classfier.fit(data)
-        # predict = classfier.predict(data)
+        # classfier.fit(data)
+        classfier.fit()
         ri, ari = classfier.accuracy(labels)
-        # ri, ari = rand_score(labels, predict), adjusted_rand_score(labels, predict)
-        print(ri, ari)
+        # print(ri, ari)
         avregeRi += ri
         avregeAri += ari
 
     classfier.plot()
-        
+
     evaluation_results['mean_RI_score'] = avregeRi / roundsAmount * 100
     evaluation_results['mean_ARI_score'] = avregeAri / roundsAmount * 100
 
