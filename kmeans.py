@@ -9,12 +9,12 @@ from sklearn.metrics.cluster import adjusted_rand_score
 
 class Kmeans:
     def __init__(self, numberOfClusters = 0):
-        self.__numberOfClusters = numberOfClusters
-        self.__maxNumberOfIterations = 100
-        self.__clusterLabels = None
-        self.__pastDataSets = []
-        self.__centers = []
         self.__data = None
+        self.__centers = []
+        self.__pastDataSets = []
+        self.__clusterLabels = None
+        self.__maxNumberOfIterations = 100
+        self.__numberOfClusters = numberOfClusters
     
     def __placeClusterCentroids(self):
         """ create random clusters """

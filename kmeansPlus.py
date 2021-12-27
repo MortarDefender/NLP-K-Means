@@ -26,7 +26,7 @@ class KmeansPlus:
     def __placeClusterCentroids(self):
         """ create a randome center using weights from all the data points """
         
-        return random.choices(self.__vectors, weights=(self.__weightedDistances), k=1)
+        return random.choices(self.__vectors, weights=(self.__weightedDistances), k = 1)
 
     def __computeDistance(self, dataPoint, cent):
         """ check the distance between all data points to the last center added

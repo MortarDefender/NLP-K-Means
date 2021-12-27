@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+from time import time
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import TfidfVectorizer as Downscale
 
@@ -21,32 +22,38 @@ def getFeatureVectors(fileName):
     data = dataFile["data"]
     vectorizer = Downscale(max_features = 20000)
     tf_idf = vectorizer.fit_transform(data)
-    tf_idf_norm = normalize(tf_idf)
-    tf_idf_array = tf_idf_norm.toarray()
+    # tf_idf_norm = normalize(tf_idf)
+    # tf_idf_array = tf_idf_norm.toarray()
+    tf_idf_array = tf_idf.toarray()
 
     return tf_idf_array
 
 
-def kmeans_cluster_and_evaluate(data_file):
+def kmeans_cluster_and_evaluate(data_file, debug = False):
     print('starting kmeans clustering and evaluation with', data_file)
     
-    roundsAmount = 500
+    t = time()
+    roundsAmount = 200
     evaluation_results = {'mean_RI_score': 0.0, 'mean_ARI_score': 0.0}
     
     data = getFeatureVectors(data_file)
     labels, labelsAmount = getLabels(data_file)
-    
-    classfier = Kmeans(labelsAmount)
-    # classfier = KmeansPlus(labelsAmount)
+     
+    # classfier = Kmeans(labelsAmount)
+    classfier = KmeansPlus(labelsAmount)
     
     avregeRi, avregeAri = 0, 0
 
     for i in range(roundsAmount):
         classfier.fit(data)
+        
         ri, ari = classfier.accuracy(labels)
-        print(ri, ari)
+        
         avregeRi += ri
         avregeAri += ari
+        
+        if debug and i % 50 == 0:
+            print(f"{i}. {ri} - {ari}  ==> {time() - t} s")
 
     classfier.plot()
 
@@ -60,7 +67,8 @@ if __name__ == '__main__':
     with open('config.json', 'r') as json_file:
         config = json.load(json_file)
 
-    results = kmeans_cluster_and_evaluate(config['small-data'])
+    results = kmeans_cluster_and_evaluate(config['data'])
+    # results = kmeans_cluster_and_evaluate(config['small-data'])
 
     for k, v in results.items():
         print(k, v)
