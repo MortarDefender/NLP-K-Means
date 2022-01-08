@@ -1,11 +1,14 @@
+import sys
 import json
 import pandas as pd
 from time import time
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import TfidfVectorizer as Downscale
 
-from kmeans import Kmeans
-from kmeansPlus import KmeansPlus
+sys.path.append('../')
+
+from src.kmeans import Kmeans
+from src.kmeansPlus import KmeansPlus
 
 
 def getLabels(fileName):
@@ -29,7 +32,7 @@ def getFeatureVectors(fileName):
     return tf_idf_array
 
 
-def kmeans_cluster_and_evaluate(data_file, debug = False):
+def kmeans_cluster_and_evaluate(data_file, plus = False, debug = False):
     print('starting kmeans clustering and evaluation with', data_file)
     
     t = time()
@@ -38,9 +41,11 @@ def kmeans_cluster_and_evaluate(data_file, debug = False):
     
     data = getFeatureVectors(data_file)
     labels, labelsAmount = getLabels(data_file)
-     
-    # classfier = Kmeans(labelsAmount)
-    classfier = KmeansPlus(labelsAmount)
+    
+    if plus:
+        classfier = KmeansPlus(labelsAmount)
+    else:
+        classfier = Kmeans(labelsAmount)
     
     avregeRi, avregeAri = 0, 0
 
